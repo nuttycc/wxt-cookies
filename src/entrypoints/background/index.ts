@@ -22,5 +22,17 @@ export default defineBackground({
         browser.action.setBadgeText({ text: 'OK', tabId });
       }
     });
+
+
+    // lifetime
+    browser.runtime.onInstalled.addListener((details) => {
+      if (details.reason === browser.runtime.OnInstalledReason.INSTALL) {
+        // 扩展安装
+        browser.tabs.create({ url: "welcome.html" });
+      } else if (details.reason === browser.runtime.OnInstalledReason.UPDATE) {
+        // 扩展更新
+        browser.tabs.create({ url: "welcome.html#/changelog" });
+      }
+    });
   },
 });
