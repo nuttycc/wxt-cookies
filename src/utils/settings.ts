@@ -2,8 +2,7 @@
 import { storage } from '#imports';
 
 // 定义一个布尔型设置项，带默认值
-export const darkMode = storage.defineItem<boolean>('local:darkMode', {
-  fallback: false,
+export const theme = storage.defineItem<string | undefined>('local:theme', {
   version: 1,
 });
 

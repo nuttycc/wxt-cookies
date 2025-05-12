@@ -1,25 +1,21 @@
 import { defineConfig } from 'wxt';
-import { resolve } from 'node:path';
+import { browserslistToTargets } from 'lightningcss';
 import tailwindcss from '@tailwindcss/vite'
 import browserslist from 'browserslist';
-import {browserslistToTargets} from 'lightningcss';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   srcDir: 'src',
   modules: ['@wxt-dev/module-vue'],
   manifest: {
-    permissions: ['storage'],
+    permissions: ['storage', 'cookies', 'activeTab'],
+    host_permissions: ['*://*.chrome.com/*'],
+    optional_host_permissions: ['*://*/*']
   },
   webExt: {
     disabled: true,
-    chromiumProfile: resolve('.wxt/chrome-data'),
-    keepProfileChanges: true,
-    startUrls: ['https://duckduckgo.com/'],
-    openConsole: true,
-    openDevtools: true
   },
-  vite: () =>( {
+  vite: () => ({
     plugins: [
       tailwindcss(),
     ],
