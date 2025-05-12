@@ -2,6 +2,7 @@ import { defineConfig } from 'wxt';
 import { browserslistToTargets } from 'lightningcss';
 import tailwindcss from '@tailwindcss/vite'
 import browserslist from 'browserslist';
+import pkg from './package.json';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -16,6 +17,10 @@ export default defineConfig({
     disabled: true,
   },
   vite: () => ({
+    define: {
+      __APP_NAME__: JSON.stringify(pkg.name),
+      __APP_VERSION__: JSON.stringify(pkg.version),
+    },
     plugins: [
       tailwindcss(),
     ],

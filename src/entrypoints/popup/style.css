@@ -1,1 +1,19 @@
 @import '@/assets/main.css';
+
+/* 亮色模式 - 现代灰色 */
+:root {
+  scrollbar-width: thin;
+  scrollbar-gutter: stable both-edges;
+  scrollbar-color: #aeb6bf #f4f6f7;
+  /* 滑块：中灰色，轨道：极浅灰色 */
+}
+
+/* 暗色模式 - 现代灰色 */
+:root.dark {
+  scrollbar-color: #85929e #34495e;
+  /* 滑块：浅灰蓝色，轨道：深灰蓝色 */
+}
+
+body {
+  @apply min-h-[250px] w-[320px] bg-white px-3 py-1 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+}

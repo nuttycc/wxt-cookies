@@ -1,10 +1,21 @@
 <script setup lang="ts">
-import GlobalNavBar from "@/components/GlobalNavBar.vue";
+import GlobalNavBar from '@/components/GlobalNavBar.vue';
+
+const navItems = [
+  {
+    name: 'Home',
+    path: '/',
+  },
+  {
+    name: 'About',
+    path: '/about',
+  },
+];
 </script>
 
 <template>
-  <div class="p-3 text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 w-[320px] min-h-[250px]">
-    <GlobalNavBar />
+  <div>
+    <GlobalNavBar :navItems="navItems" />
     <div class="mt-2">
       <RouterView />
     </div>

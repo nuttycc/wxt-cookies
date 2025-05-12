@@ -11,7 +11,6 @@ export default defineBackground({
       const value = await storage.getItem<number>('local:installDate');
       // console.debug('value', value);
 
-
       if (!value) {
         await storage.setItem('local:installDate', Date.now());
       }
@@ -27,7 +26,6 @@ export default defineBackground({
         browser.action.setBadgeText({ text: 'OK', tabId });
       }
     });
-
 
     // lifetime
     browser.runtime.onInstalled.addListener((details) => {

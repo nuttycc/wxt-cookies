@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createMemoryHistory, createRouter } from 'vue-router';
 
 const routes = [
   {
@@ -9,13 +9,18 @@ const routes = [
   {
     path: '/error',
     name: 'error',
-    component: () => import('@/entrypoints/popup/pages/ErrorPage.vue'), 
+    component: () => import('@/entrypoints/popup/pages/ErrorPage.vue'),
+  },
+  {
+    path: '/about',
+    name: 'about',
+    component: () => import('@/entrypoints/popup/pages/AboutPage.vue'),
   },
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createMemoryHistory(),
   routes,
 });
 
-export default router; 
+export default router;

@@ -1,7 +1,7 @@
 <template>
   <div>
-    <h2 class="text-2xl font-semibold mb-4 text-slate-800 dark:text-slate-200">Changelog</h2>
-    <div class="text-slate-700 dark:text-slate-300 space-y-4">
+    <h2 class="mb-4 text-2xl font-semibold text-slate-800 dark:text-slate-200">Changelog</h2>
+    <div class="space-y-4 text-slate-700 dark:text-slate-300">
       <!-- 示例更新日志条目 -->
       <div>
         <h3 class="text-xl font-medium text-slate-800 dark:text-slate-200">版本 1.1.0</h3>
@@ -23,4 +23,4 @@
 
 <style scoped>
 /* Component specific styles */
-</style> 
+</style>
