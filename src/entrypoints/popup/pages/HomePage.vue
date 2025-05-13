@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { onBeforeMount, onUnmounted } from 'vue';
-import { useClipboard } from '../../../composables/useClipboard';
-import { useCookiePermission } from '../../../composables/useCookiePermission';
-import { useCookies, type CookieWithDetailsState } from '../../../composables/useCookies';
+import { useClipboard } from '@/composables/useClipboard';
+import { useCookiePermission } from '@/composables/useCookiePermission';
+import { useCookies, type CookieWithDetailsState } from '@/composables/useCookies';
 
 // 使用composables
 const { currentTab, hasPermission, togglePermission } = useCookiePermission();

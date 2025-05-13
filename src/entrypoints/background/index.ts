@@ -1,8 +1,11 @@
 import { storage } from '#imports';
 import { browser } from 'wxt/browser';
+import log from '@/utils/logger';
+import { onMessage } from '@/utils/message';
 
 export default defineBackground({
   main() {
+
     // Executed when background is loaded, CANNOT BE ASYNC
     browser.tabs.onActivated.addListener(async ({ tabId }) => {
       // console.debug('onActivated', tabId);
@@ -37,5 +40,19 @@ export default defineBackground({
         // browser.tabs.create({ url: "welcome.html#/changelog" });
       }
     });
+
+
+    // messages
+    // browser.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    //   log.debug('onMessage', message, sender, sendResponse);
+    //   sendResponse('Hello from background');
+    // });
+
+
+    onMessage('getStringLength', message => {
+      log.debug('onMessage', message);
+      return message.data.length;
+    });
+
   },
 });
