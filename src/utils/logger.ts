@@ -19,8 +19,8 @@ const applyLoggerConfig = (logger: log.Logger, name?: string) => {
     },
   });
 
-  const isProduction = !import.meta.env.DEV;
-  logger.setLevel(isProduction ? log.levels.WARN : log.levels.DEBUG);
+  const isDev = import.meta.env.DEV;
+  logger.setLevel(isDev ? log.levels.DEBUG : log.levels.WARN);
 };
 
 // Initialize default logger

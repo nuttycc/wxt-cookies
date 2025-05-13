@@ -1,10 +1,8 @@
 import { storage } from '#imports';
 import { browser } from 'wxt/browser';
-import log from '@/utils/logger';
 
 export default defineBackground({
   main() {
-
     // Executed when background is loaded, CANNOT BE ASYNC
     browser.tabs.onActivated.addListener(async ({ tabId }) => {
       // console.debug('onActivated', tabId);

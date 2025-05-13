@@ -14,7 +14,9 @@
     "compile": "vue-tsc --noEmit",
     "format": "prettier --write src/**/*.{ts,vue,html,css}",
     "lint": "eslint src/**/*.{ts,vue} --fix",
-    "postinstall": "wxt prepare"
+    "oxlint": "oxlint src/**/*.{ts,vue} --fix",
+    "postinstall": "wxt prepare",
+    "prepare": "husky"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.6",
@@ -34,7 +36,10 @@
     "eslint": "^9.26.0",
     "eslint-plugin-vue": "^10.1.0",
     "globals": "^16.1.0",
+    "husky": "^9.1.7",
     "lightningcss": "^1.30.0",
+    "lint-staged": "^16.0.0",
+    "oxlint": "^0.16.10",
     "prettier": "3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
@@ -43,5 +48,11 @@
     "vue-tsc": "^2.2.10",
     "wxt": "^0.20.6"
   },
-  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
+  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39",
+  "lint-staged": {
+    "*.{ts,vue,html,css}": [
+      "prettier --write",
+      "oxlint --fix"
+    ]
+  }
 }
