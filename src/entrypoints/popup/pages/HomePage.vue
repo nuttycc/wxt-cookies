@@ -2,18 +2,54 @@
 import { useClipboard } from '@/composables/useClipboard';
 import { useCookiePermission } from '@/composables/useCookiePermission';
 import { useCookies, type CookieWithDetailsState } from '@/composables/useCookies';
-import { onBeforeMount, onUnmounted } from 'vue';
+import { onBeforeMount, onUnmounted, ref } from 'vue';
+import CookieList from '../components/cookie/CookieList.vue';
+import CookieListHeader from '../components/cookie/CookieListHeader.vue';
+import DeleteConfirmDialog from '../components/cookie/DeleteConfirmDialog.vue';
+import SuccessMessage from '../components/cookie/SuccessMessage.vue';
 
 // 使用composables
 const { currentTab, hasPermission, togglePermission } = useCookiePermission();
 
 // 直接传递响应式引用
-const { cookies, toggleDetails, toggleValueMask, toggleValueExpand } = useCookies(
+const { cookies, toggleDetails, toggleValueMask, toggleValueExpand, deleteCookie } = useCookies(
   currentTab,
   hasPermission,
 );
 
 const { copyToClipboard, selectAllText } = useClipboard();
+
+// 删除确认相关状态
+const showDeleteConfirm = ref(false);
+const cookieToDelete = ref<CookieWithDetailsState | null>(null);
+const showSuccessMessage = ref(false);
+
+// 打开删除确认对话框
+const openDeleteConfirm = (cookie: CookieWithDetailsState, event: MouseEvent) => {
+  event.stopPropagation();
+  cookieToDelete.value = cookie;
+  showDeleteConfirm.value = true;
+};
+
+// 关闭删除确认对话框
+const closeDeleteConfirm = () => {
+  showDeleteConfirm.value = false;
+  cookieToDelete.value = null;
+};
+
+// 确认删除Cookie
+const confirmDelete = async () => {
+  if (cookieToDelete.value) {
+    const success = await deleteCookie(cookieToDelete.value);
+    if (success) {
+      showSuccessMessage.value = true;
+      setTimeout(() => {
+        showSuccessMessage.value = false;
+      }, 3000); // 3秒后自动隐藏成功提示
+    }
+    closeDeleteConfirm();
+  }
+};
 
 // 全局点击处理
 const handleGlobalClick = (event: MouseEvent) => {
@@ -25,6 +61,23 @@ const handleGlobalClick = (event: MouseEvent) => {
     });
   }
 };
+
+// 名称展开/收起逻辑
+function toggleNameExpand(cookie: CookieWithDetailsState, event: MouseEvent) {
+  event.stopPropagation();
+  // 如果已展开则收起
+  if (cookie.isNameExpanded) {
+    cookie.isNameExpanded = false;
+    return;
+  }
+  // 关闭其他所有展开的 name
+  cookies.value.forEach((c) => {
+    if (c !== cookie) {
+      c.isNameExpanded = false;
+    }
+  });
+  cookie.isNameExpanded = true;
+}
 
 // 生命周期钩子
 onBeforeMount(() => {
@@ -38,137 +91,26 @@ onUnmounted(() => {
 
 <template>
   <div>
-    <!-- 优化标题和 URL 信息部分的布局 -->
-    <div class="mb-3 flex flex-col space-y-2">
-      <h1 class="text-xl font-bold">Cookie List</h1>
-
-      <!-- 紧凑化的 URL 和权限按钮 -->
-      <div v-if="currentTab" class="flex items-center text-xs">
-        <div class="w-[65%] truncate text-gray-600 dark:text-gray-400">
-          <span class="font-mono">{{ currentTab.url }}</span>
-        </div>
-        <button
-          @click="togglePermission"
-          class="ml-auto rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-600"
-        >
-          {{ hasPermission ? '移除权限' : '请求权限' }}
-        </button>
-      </div>
-    </div>
-
+    ----
+    <iconify-icon icon="mdi:home"></iconify-icon>
+    ----
+    <CookieListHeader
+      :current-tab="currentTab"
+      :has-permission="hasPermission"
+      @toggle-permission="togglePermission"
+    />
     <div v-if="currentTab && hasPermission" class="space-y-3">
       <h2 class="flex items-center gap-2 text-lg font-semibold">
         <span>Cookies</span>
         <span class="text-sm text-gray-600 dark:text-gray-400">({{ cookies.length }})</span>
       </h2>
-      <div
-        v-if="cookies.length === 0"
-        class="rounded-md border border-gray-200 bg-white p-4 text-center text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-      >
-        <p>该网站没有可用的 Cookie。</p>
-      </div>
-      <div v-else class="space-y-3">
-        <div
-          v-for="cookie in cookies"
-          :key="cookie.name + cookie.domain + cookie.path"
-          class="rounded-md border border-gray-200 bg-white p-3 text-sm transition-colors duration-150 dark:border-gray-700 dark:bg-gray-800"
-        >
-          <!-- Header: Icon, Name, Edit Icon -->
-          <div class="flex items-center justify-between pb-2">
-            <div class="flex items-center gap-2">
-              <span>🍪</span>
-              <span class="font-semibold text-gray-800 dark:text-gray-200">{{ cookie.name }}</span>
-            </div>
-            <span class="cursor-pointer text-gray-500 dark:text-gray-400">✏️</span>
-          </div>
-
-          <!-- Separator 1 -->
-          <div class="border-t border-gray-200 dark:border-gray-700"></div>
-
-          <!-- Value Row (Two-column layout with inline expand) -->
-          <div class="my-2">
-            <div
-              class="cookie-value-clickable flex w-full items-start rounded border border-gray-200 bg-gray-100 p-2 dark:border-gray-600 dark:bg-gray-700"
-              :class="{
-                'items-center': !cookie.isValueExpanded,
-                'cursor-pointer': !cookie.isValueExpanded,
-                'cursor-text': cookie.isValueExpanded,
-              }"
-              @click="toggleValueExpand(cookie, $event)"
-            >
-              <!-- Value Content -->
-              <div
-                class="flex-grow text-gray-800 dark:text-gray-200"
-                :class="{
-                  'overflow-hidden text-ellipsis whitespace-nowrap': !cookie.isValueExpanded,
-                  'break-all select-all': cookie.isValueExpanded,
-                }"
-                @dblclick="selectAllText($event)"
-              >
-                {{ cookie.value }}
-              </div>
-
-              <!-- Copy Button -->
-              <span
-                class="ml-2 flex-shrink-0 cursor-pointer text-gray-500 dark:text-gray-400"
-                @click="copyToClipboard(cookie.value, $event)"
-                >📋</span
-              >
-            </div>
-          </div>
-
-          <!-- Toggle Details -->
-          <div class="mt-2 flex cursor-pointer items-center gap-1" @click="toggleDetails(cookie)">
-            <span class="text-gray-500 dark:text-gray-400">{{
-              cookie.isDetailsOpen ? '⬆️' : '⬇️'
-            }}</span>
-            <span class="text-gray-600 dark:text-gray-400">{{
-              cookie.isDetailsOpen ? '收起详细' : '展开详细'
-            }}</span>
-          </div>
-
-          <!-- Separator 2 -->
-          <div
-            v-if="cookie.isDetailsOpen"
-            class="mt-2 border-t border-gray-200 dark:border-gray-700"
-          ></div>
-
-          <!-- Detailed Info -->
-          <div
-            v-show="cookie.isDetailsOpen"
-            class="space-y-0.5 text-xs text-gray-600 dark:text-gray-400"
-          >
-            <div>
-              域名: <span class="font-mono break-all">{{ cookie.domain }}</span>
-            </div>
-            <div>
-              路径: <span class="font-mono break-all">{{ cookie.path }}</span>
-            </div>
-            <div>
-              Secure: <span class="font-mono">{{ cookie.secure ? '✅' : '❌' }}</span>
-            </div>
-            <div>
-              HttpOnly: <span class="font-mono">{{ cookie.httpOnly ? '✅' : '❌' }}</span>
-            </div>
-            <div>
-              Session: <span class="font-mono">{{ cookie.session ? '✅' : '❌' }}</span>
-            </div>
-            <div v-if="cookie.sameSite !== undefined">
-              SameSite: <span class="font-mono">{{ cookie.sameSite }}</span>
-            </div>
-            <div v-if="cookie.expirationDate !== undefined">
-              Expires:
-              <span class="font-mono">{{
-                new Date(cookie.expirationDate * 1000).toLocaleString()
-              }}</span>
-            </div>
-            <div v-if="cookie.partitionKey !== undefined">
-              Partitioned: <span class="font-mono">{{ !!cookie.partitionKey ? '✅' : '❌' }}</span>
-            </div>
-            <!-- 可以根据需要添加更多属性 -->
-          </div>
-        </div>
-      </div>
+      <CookieList
+        :cookies="cookies"
+        @delete="openDeleteConfirm"
+        @toggle-details="toggleDetails"
+        @toggle-value-expand="toggleValueExpand"
+        @toggle-name-expand="toggleNameExpand"
+      />
     </div>
     <div
       v-else-if="currentTab && !hasPermission"
@@ -176,6 +118,13 @@ onUnmounted(() => {
     >
       <p>请授予权限以查看 Cookies。</p>
     </div>
+    <DeleteConfirmDialog
+      :visible="showDeleteConfirm"
+      :cookie-name="cookieToDelete?.name"
+      @confirm="confirmDelete"
+      @cancel="closeDeleteConfirm"
+    />
+    <SuccessMessage :visible="showSuccessMessage" message="Cookie 删除成功" />
   </div>
 </template>
 

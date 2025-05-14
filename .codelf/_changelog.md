@@ -46,4 +46,33 @@ root
    - GlobalNavBar.vue // refact 添加主题切换按钮
 ```
 
+## 2024-08-11
+
+### 1. 权限管理相关组合函数重构
+
+**Change Type**: refactor
+
+> **Purpose**: 提高 Cookie 权限相关代码的可维护性、可测试性和复用性
+> **Detailed Description**:
+>
+> - 将原 `useCookiePermission.ts` 中的标签页获取、权限状态管理、origin 生成等逻辑，分别拆分为 `useCurrentTab.ts`、`usePermissionStatus.ts`、`permissionOrigins.ts` 等独立模块。
+> - `useCookiePermission.ts` 仅作为高阶组合，聚合上述模块，统一对外暴露 API。
+> - 每个模块职责单一，便于单元测试和后续扩展。
+>   **Reason for Change**: 原文件职责过于集中，难以维护和扩展。
+>   **Impact Scope**: 影响所有依赖 Cookie 权限管理的功能和页面。
+>   **API Changes**: 组合式函数 API 更加清晰，便于调用和测试。
+>   **Configuration Changes**: 无
+>   **Performance Impact**: 无明显性能影响
+
+```
+root
+- src
+  - composables
+   - useCurrentTab.ts // add 当前标签页信息获取
+   - usePermissionStatus.ts // add 权限状态管理
+   - useCookiePermission.ts // refact 高阶组合
+  - utils
+   - permissionOrigins.ts // add 权限 origin 生成工具
+```
+
 ...

@@ -23,6 +23,7 @@
     "@vueuse/core": "^13.1.0",
     "@webext-core/messaging": "^2.2.0",
     "browserslist": "^4.24.5",
+    "iconify-icon": "^3.0.0",
     "loglevel": "^1.9.2",
     "loglevel-plugin-prefix": "^0.8.4",
     "pinia": "^3.0.2",

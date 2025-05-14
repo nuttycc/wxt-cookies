@@ -47,7 +47,9 @@ root
 │   │   └── HelloWorld.vue   # 示例组件
 │   ├── composables          # 可复用的组合函数
 │   │   ├── useClipboard.ts  # 剪贴板操作
-│   │   ├── useCookiePermission.ts # Cookie 权限管理
+│   │   ├── useCurrentTab.ts # 获取当前活动标签页信息
+│   │   ├── usePermissionStatus.ts # 权限状态管理
+│   │   ├── useCookiePermission.ts # Cookie 权限高阶组合
 │   │   └── useCookies.ts    # Cookie 操作
 │   ├── entrypoints          # 扩展入口点
 │   │   ├── background.ts    # 后台脚本
@@ -67,8 +69,16 @@ root
 │   │       └── router       # 路由配置
 │   └── utils                # 工具函数
 │       ├── logger.ts        # 日志工具
+│       ├── permissionOrigins.ts # 权限 origin 生成工具
 │       ├── settings.ts      # 设置管理
 │       └── theme.ts         # 主题管理
 ├── tsconfig.json            # TypeScript 配置
 └── wxt.config.ts            # WXT 框架配置
 ```
+
+### 组合式函数与工具拆分说明
+
+- `useCurrentTab.ts`：负责获取当前活动标签页信息，解耦标签页状态管理。
+- `usePermissionStatus.ts`：负责根据 origin 检查、请求、移除权限，专注权限状态管理。
+- `permissionOrigins.ts`：工具函数，负责从 URL 生成权限 origin 列表，便于复用和测试。
+- `useCookiePermission.ts`：高阶组合，聚合上述模块，统一对外暴露 Cookie 权限相关 API。

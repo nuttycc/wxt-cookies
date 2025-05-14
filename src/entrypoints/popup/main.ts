@@ -1,5 +1,6 @@
 import log from '@/utils/logger';
 import { initTheme } from '@/utils/theme';
+import 'iconify-icon';
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
