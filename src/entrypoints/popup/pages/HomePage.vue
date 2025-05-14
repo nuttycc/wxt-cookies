@@ -1,8 +1,8 @@
 <script lang="ts" setup>
-import { onBeforeMount, onUnmounted } from 'vue';
 import { useClipboard } from '@/composables/useClipboard';
 import { useCookiePermission } from '@/composables/useCookiePermission';
 import { useCookies, type CookieWithDetailsState } from '@/composables/useCookies';
+import { onBeforeMount, onUnmounted } from 'vue';
 
 // 使用composables
 const { currentTab, hasPermission, togglePermission } = useCookiePermission();
@@ -56,7 +56,7 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div v-if="hasPermission" class="space-y-3">
+    <div v-if="currentTab && hasPermission" class="space-y-3">
       <h2 class="flex items-center gap-2 text-lg font-semibold">
         <span>Cookies</span>
         <span class="text-sm text-gray-600 dark:text-gray-400">({{ cookies.length }})</span>
@@ -171,7 +171,7 @@ onUnmounted(() => {
       </div>
     </div>
     <div
-      v-else-if="!hasPermission"
+      v-else-if="currentTab && !hasPermission"
       class="rounded-md border border-gray-300 p-4 text-center text-gray-600 dark:border-gray-700 dark:text-gray-400"
     >
       <p>请授予权限以查看 Cookies。</p>
