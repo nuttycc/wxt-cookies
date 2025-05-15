@@ -2,27 +2,37 @@
 import { useClipboard } from '@/composables/useClipboard';
 import { useCookiePermission } from '@/composables/useCookiePermission';
 import { useCookies, type CookieWithDetailsState } from '@/composables/useCookies';
-import { onBeforeMount, onUnmounted, ref } from 'vue';
+import { useToast } from '@/composables/useToast';
+import { onMounted, onUnmounted, ref } from 'vue';
 import CookieList from '../components/cookie/CookieList.vue';
 import CookieListHeader from '../components/cookie/CookieListHeader.vue';
 import DeleteConfirmDialog from '../components/cookie/DeleteConfirmDialog.vue';
-import SuccessMessage from '../components/cookie/SuccessMessage.vue';
+import EditConfirmDialog from '../components/cookie/EditConfirmDialog.vue';
 
 // 使用composables
 const { currentTab, hasPermission, togglePermission } = useCookiePermission();
 
 // 直接传递响应式引用
-const { cookies, toggleDetails, toggleValueMask, toggleValueExpand, deleteCookie } = useCookies(
-  currentTab,
-  hasPermission,
-);
+const {
+  cookies,
+  error,
+  toggleDetails,
+  toggleValueMask,
+  toggleValueExpand,
+  deleteCookie,
+  updateCookie,
+  refreshCookies,
+} = useCookies(currentTab, hasPermission);
 
 const { copyToClipboard, selectAllText } = useClipboard();
+const toast = useToast();
 
-// 删除确认相关状态
+// 删除和编辑确认相关状态
 const showDeleteConfirm = ref(false);
+const showEditConfirm = ref(false);
 const cookieToDelete = ref<CookieWithDetailsState | null>(null);
-const showSuccessMessage = ref(false);
+const cookieToEdit = ref<CookieWithDetailsState | null>(null);
+const editedCookieData = ref<Partial<globalThis.Browser.cookies.Cookie> | null>(null);
 
 // 打开删除确认对话框
 const openDeleteConfirm = (cookie: CookieWithDetailsState, event: MouseEvent) => {
@@ -40,14 +50,56 @@ const closeDeleteConfirm = () => {
 // 确认删除Cookie
 const confirmDelete = async () => {
   if (cookieToDelete.value) {
+    const cookieName = cookieToDelete.value.name;
     const success = await deleteCookie(cookieToDelete.value);
+
     if (success) {
-      showSuccessMessage.value = true;
-      setTimeout(() => {
-        showSuccessMessage.value = false;
-      }, 3000); // 3秒后自动隐藏成功提示
+      // 显示成功消息
+      toast.success(`Cookie '${cookieName}' 已成功删除`);
+    } else {
+      // 显示错误消息
+      const errorMsg = error.value ? error.value.message : '未知错误';
+      toast.error(`删除 Cookie '${cookieName}' 失败：${errorMsg}`);
     }
+
     closeDeleteConfirm();
+  }
+};
+
+// 打开编辑确认对话框
+const openEditConfirm = (
+  cookie: CookieWithDetailsState,
+  updatedData: Partial<globalThis.Browser.cookies.Cookie>,
+) => {
+  cookieToEdit.value = cookie;
+  editedCookieData.value = updatedData;
+  showEditConfirm.value = true;
+};
+
+// 关闭编辑确认对话框
+const closeEditConfirm = () => {
+  showEditConfirm.value = false;
+  cookieToEdit.value = null;
+  editedCookieData.value = null;
+};
+
+// 确认编辑Cookie
+const confirmEdit = async () => {
+  if (cookieToEdit.value && editedCookieData.value) {
+    const cookieName = cookieToEdit.value.name;
+    // 使用组件顶部已初始化的 updateCookie 方法
+    const success = await updateCookie(cookieToEdit.value, editedCookieData.value);
+
+    if (success) {
+      // 显示成功消息
+      toast.success(`Cookie '${cookieName}' 已成功更新`);
+    } else {
+      // 显示错误消息
+      const errorMsg = error.value ? error.value.message : '未知错误';
+      toast.error(`更新 Cookie '${cookieName}' 失败：${errorMsg}`);
+    }
+
+    closeEditConfirm();
   }
 };
 
@@ -56,9 +108,9 @@ const handleGlobalClick = (event: MouseEvent) => {
   // 如果点击的不是value区域或它的子元素，收起所有展开的value
   const target = event.target as HTMLElement;
   if (!target.closest('.cookie-value-clickable')) {
-    cookies.value.forEach((cookie: CookieWithDetailsState) => {
-      cookie.isValueExpanded = false;
-    });
+    if (cookies.value.some((c) => c.isValueExpanded)) {
+      cookies.value.forEach((c) => (c.isValueExpanded = false));
+    }
   }
 };
 
@@ -80,7 +132,7 @@ function toggleNameExpand(cookie: CookieWithDetailsState, event: MouseEvent) {
 }
 
 // 生命周期钩子
-onBeforeMount(() => {
+onMounted(() => {
   document.addEventListener('click', handleGlobalClick);
 });
 
@@ -110,6 +162,7 @@ onUnmounted(() => {
         @toggle-details="toggleDetails"
         @toggle-value-expand="toggleValueExpand"
         @toggle-name-expand="toggleNameExpand"
+        @edit="openEditConfirm"
       />
     </div>
     <div
@@ -124,7 +177,12 @@ onUnmounted(() => {
       @confirm="confirmDelete"
       @cancel="closeDeleteConfirm"
     />
-    <SuccessMessage :visible="showSuccessMessage" message="Cookie 删除成功" />
+    <EditConfirmDialog
+      :visible="showEditConfirm"
+      :cookie-name="cookieToEdit?.name"
+      @confirm="confirmEdit"
+      @cancel="closeEditConfirm"
+    />
   </div>
 </template>
 

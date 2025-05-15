@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { CookieWithDetailsState } from '@/composables/useCookies';
+import { ref } from 'vue';
 import CookieDetails from './CookieDetails.vue';
 import CookieValue from './CookieValue.vue';
+import EditCookieForm from './EditCookieForm.vue';
 
 /**
  * @param cookie 单个 Cookie 信息
@@ -9,6 +11,7 @@ import CookieValue from './CookieValue.vue';
  * @emits toggle-details 展开/收起详细
  * @emits toggle-value-expand 展开/收起值
  * @emits toggle-name-expand 展开/收起名称
+ * @emits edit 编辑 Cookie
  */
 const props = defineProps<{
   cookie: CookieWithDetailsState;
@@ -18,10 +21,39 @@ const emit = defineEmits<{
   (e: 'toggle-details', cookie: CookieWithDetailsState): void;
   (e: 'toggle-value-expand', cookie: CookieWithDetailsState, event: MouseEvent): void;
   (e: 'toggle-name-expand', cookie: CookieWithDetailsState, event: MouseEvent): void;
+  (
+    e: 'edit',
+    cookie: CookieWithDetailsState,
+    updatedData: Partial<globalThis.Browser.cookies.Cookie>,
+  ): void;
 }>();
+
+// 编辑模式状态
+const isEditing = ref(false);
 
 function handleToggleNameExpand(event: MouseEvent) {
   emit('toggle-name-expand', props.cookie, event);
+}
+
+// 进入编辑模式
+function handleEdit(event: MouseEvent) {
+  event.stopPropagation();
+  // 展开详细信息
+  if (!props.cookie.isDetailsOpen) {
+    emit('toggle-details', props.cookie);
+  }
+  isEditing.value = true;
+}
+
+// 保存编辑的 Cookie
+function handleSave(updatedData: Partial<globalThis.Browser.cookies.Cookie>) {
+  emit('edit', props.cookie, updatedData);
+  isEditing.value = false;
+}
+
+// 取消编辑
+function handleCancelEdit() {
+  isEditing.value = false;
 }
 </script>
 
@@ -55,7 +87,9 @@ function handleToggleNameExpand(event: MouseEvent) {
       </div>
       <div class="flex items-center gap-2">
         <span
-          class="cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          class="cursor-pointer text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400"
+          @click="handleEdit"
+          title="编辑Cookie"
           >✏️</span
         >
         <span
@@ -91,6 +125,14 @@ function handleToggleNameExpand(event: MouseEvent) {
       v-if="props.cookie.isDetailsOpen"
       class="mt-2 border-t border-gray-200 dark:border-gray-700"
     ></div>
-    <CookieDetails v-if="props.cookie.isDetailsOpen" :cookie="props.cookie" />
+    <template v-if="props.cookie.isDetailsOpen">
+      <EditCookieForm
+        v-if="isEditing"
+        :cookie="props.cookie"
+        @save="handleSave"
+        @cancel="handleCancelEdit"
+      />
+      <CookieDetails v-else :cookie="props.cookie" />
+    </template>
   </div>
 </template>

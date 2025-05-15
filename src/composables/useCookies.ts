@@ -128,9 +128,13 @@ export function useCookies(
   // 删除Cookie的方法
   const deleteCookie = async (cookie: CookieWithDetailsState) => {
     const currentTab = getTabValue();
-    if (!currentTab || !currentTab.url) return false;
+    if (!currentTab || !currentTab.url) {
+      error.value = new Error('无法获取当前标签页信息');
+      return false;
+    }
 
     try {
+      log.debug('删除Cookie', { name: cookie.name, url: currentTab.url });
       await browser.cookies.remove({
         url: currentTab.url,
         name: cookie.name,
@@ -138,8 +142,71 @@ export function useCookies(
       });
       // 删除成功后刷新Cookie列表
       await refreshCookies();
+      log.info('Cookie删除成功', { name: cookie.name });
       return true;
     } catch (err) {
+      log.error('删除Cookie失败', err);
+      error.value = err instanceof Error ? err : new Error(String(err));
+      return false;
+    }
+  };
+
+  // 更新Cookie的方法
+  const updateCookie = async (
+    cookie: CookieWithDetailsState,
+    updatedData: Partial<globalThis.Browser.cookies.Cookie>,
+  ) => {
+    const currentTab = getTabValue();
+    if (!currentTab || !currentTab.url) {
+      error.value = new Error('无法获取当前标签页信息');
+      return false;
+    }
+
+    try {
+      log.debug('更新Cookie - 先删除旧Cookie', { name: cookie.name, url: currentTab.url });
+      // 先删除旧的Cookie
+      await browser.cookies.remove({
+        url: currentTab.url,
+        name: cookie.name,
+        storeId: cookie.storeId,
+      });
+
+      /**
+       * 创建带有更新值的新Cookie
+       * 注意：虽然UI中允许编辑 domain 和 path，但在实际设置 cookie 时，
+       * 我们不直接使用这些参数，而是仅使用 url 参数。
+       * 这样可以避免浏览器自动在域名前添加点，导致创建重复的 cookie。
+       *
+       * 用户在UI中编辑的 domain 和 path 值会被保存在 updatedData 中，
+       * 但在此处不传递给 browser.cookies.set() 方法。
+       */
+      log.debug('更新Cookie - 设置新Cookie', {
+        name: cookie.name,
+        value: updatedData.value ?? cookie.value,
+        secure: updatedData.secure ?? cookie.secure,
+        httpOnly: updatedData.httpOnly ?? cookie.httpOnly,
+        sameSite: updatedData.sameSite ?? cookie.sameSite,
+        expirationDate: updatedData.expirationDate ?? cookie.expirationDate,
+      });
+
+      await browser.cookies.set({
+        url: currentTab.url,
+        name: cookie.name,
+        value: updatedData.value ?? cookie.value,
+        // 不传递 domain 和 path 参数，让浏览器从 url 中提取这些信息
+        secure: updatedData.secure ?? cookie.secure,
+        httpOnly: updatedData.httpOnly ?? cookie.httpOnly,
+        sameSite: updatedData.sameSite ?? cookie.sameSite,
+        expirationDate: updatedData.expirationDate ?? cookie.expirationDate,
+        storeId: cookie.storeId,
+      });
+
+      // 更新成功后刷新Cookie列表
+      await refreshCookies();
+      log.info('Cookie更新成功', { name: cookie.name });
+      return true;
+    } catch (err) {
+      log.error('更新Cookie失败', err);
       error.value = err instanceof Error ? err : new Error(String(err));
       return false;
     }
@@ -153,5 +220,6 @@ export function useCookies(
     toggleValueMask,
     toggleValueExpand,
     deleteCookie,
+    updateCookie,
   };
 }

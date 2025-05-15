@@ -17,6 +17,15 @@ export default defineConfig({
   webExt: {
     disabled: true,
   },
+  vue: {
+    vite: {
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag === 'iconify-icon',
+        },
+      },
+    },
+  },
   vite: () => ({
     plugins: [tailwindcss()],
     resolve: {
