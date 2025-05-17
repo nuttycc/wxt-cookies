@@ -3,7 +3,6 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nuttycc/wxt-cookies) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![wxt](https://img.shields.io/badge/wxt-v0.20.6-blue)](https://wxt.dev/) [![Vue 3](https://img.shields.io/badge/Vue-3.5.13-brightgreen)](https://vuejs.org/) [![TypeScript](https://img.shields.io/badge/TypeScript-5.6.3-blue)](https://www.typescriptlang.org/)
 
 一个现代化的浏览器扩展，用于查看和管理网站 Cookie。使用 Vue 3、TypeScript 和 WXT 框架构建，提供简洁直观的界面来检查和操作 Cookie。
-
 ## ✨ 功能特性
 
 - 🍪 实时查看当前网站的 Cookie
@@ -12,6 +11,21 @@
 - 🔒 权限管理，控制 Cookie 访问
 - 🌓 支持明暗主题，自动检测系统偏好
 - 🚀 响应式设计，适配不同尺寸的弹出窗口
+
+## 📸 截图
+
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <h4>主界面</h4>
+      <img src="docs/images/home.png" width="95%" alt="主界面">
+    </td>
+    <td width="50%" align="center">
+      <h4>编辑 Cookie</h4>
+      <img src="docs/images/edit.png" width="95%" alt="编辑 Cookie">
+    </td>
+  </tr>
+</table>
 
 ## 🚀 安装
 
@@ -99,3 +113,6 @@ src/
 ## 📄 许可证
 
 [MIT](LICENSE) © 2024 [nuttycc](https://github.com/nuttycc)
+
+
+**实际上是个学习扩展开发的基本项目，功能很简陋。readme 随便由 AI 生成，看看效果。**
