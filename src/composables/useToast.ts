@@ -1,6 +1,6 @@
+import { createLogger } from '@/utils/logger';
 import { shallowRef } from 'vue';
 import type { ToastType } from '../entrypoints/popup/components/common/CustomToast.vue';
-
 const log = createLogger('useToast');
 
 const TOAST_MANAGER_NOT_INITIALIZED = 'Toast manager not initialized';
@@ -31,17 +31,32 @@ export function setToastManager(manager: ToastManager): void {
  */
 export function useToast() {
   /**
+   * 显示通知的通用方法
+   * @param type 通知类型
+   * @param message 消息内容
+   * @param duration 显示时长（毫秒）
+   * @returns Toast ID
+   */
+  const showToast = (
+    type: 'success' | 'error' | 'info' | 'warning',
+    message: string,
+    duration: number,
+  ): number => {
+    if (toastManagerRef.value) {
+      return toastManagerRef.value[type](message, duration);
+    }
+    log.warn(TOAST_MANAGER_NOT_INITIALIZED);
+    return -1;
+  };
+
+  /**
    * 显示成功通知
    * @param message 消息内容
    * @param duration 显示时长（毫秒），默认 3000ms
    * @returns Toast ID
    */
   const success = (message: string, duration: number = 3000): number => {
-    if (toastManagerRef.value) {
-      return toastManagerRef.value.success(message, duration);
-    }
-    log.warn(TOAST_MANAGER_NOT_INITIALIZED);
-    return -1;
+    return showToast('success', message, duration);
   };
 
   /**
@@ -51,11 +66,7 @@ export function useToast() {
    * @returns Toast ID
    */
   const error = (message: string, duration: number = 5000): number => {
-    if (toastManagerRef.value) {
-      return toastManagerRef.value.error(message, duration);
-    }
-    log.warn(TOAST_MANAGER_NOT_INITIALIZED);
-    return -1;
+    return showToast('error', message, duration);
   };
 
   /**
@@ -65,11 +76,7 @@ export function useToast() {
    * @returns Toast ID
    */
   const info = (message: string, duration: number = 3000): number => {
-    if (toastManagerRef.value) {
-      return toastManagerRef.value.info(message, duration);
-    }
-    log.warn(TOAST_MANAGER_NOT_INITIALIZED);
-    return -1;
+    return showToast('info', message, duration);
   };
 
   /**
@@ -79,11 +86,7 @@ export function useToast() {
    * @returns Toast ID
    */
   const warning = (message: string, duration: number = 4000): number => {
-    if (toastManagerRef.value) {
-      return toastManagerRef.value.warning(message, duration);
-    }
-    log.warn(TOAST_MANAGER_NOT_INITIALIZED);
-    return -1;
+    return showToast('warning', message, duration);
   };
 
   /**

@@ -27,12 +27,9 @@ export function useCookies(
   const cookies = ref<CookieWithDetailsState[]>([]);
   const error = ref<Error | null>(null);
 
-  // 获取原始值，无论是否为ref
-  const getTabValue = () => (tab && 'value' in tab ? tab.value : tab);
-  const getPermissionValue = () =>
-    hasPermission && typeof hasPermission === 'object' && 'value' in hasPermission
-      ? hasPermission.value
-      : hasPermission;
+  // 使用 unref 获取原始值，自动处理 ref 和普通值
+  const getTabValue = () => unref(tab);
+  const getPermissionValue = () => unref(hasPermission);
 
   // 异步获取Cookies
   const {
@@ -163,32 +160,24 @@ export function useCookies(
     }
 
     try {
-      log.debug('更新Cookie - 先删除旧Cookie', { name: cookie.name, url: currentTab.url });
-      // 先删除旧的Cookie
-      await browser.cookies.remove({
-        url: currentTab.url,
+      log.debug('更新Cookie', {
         name: cookie.name,
-        storeId: cookie.storeId,
+        url: currentTab.url,
+        updates: {
+          value: updatedData.value !== undefined ? '***' : 'unchanged',
+          secure: updatedData.secure ?? 'unchanged',
+          httpOnly: updatedData.httpOnly ?? 'unchanged',
+          sameSite: updatedData.sameSite ?? 'unchanged',
+          expirationDate: updatedData.expirationDate ? 'updated' : 'unchanged',
+        },
       });
 
       /**
-       * 创建带有更新值的新Cookie
+       * 直接更新Cookie，利用browser.cookies.set的幂等性
        * 注意：虽然UI中允许编辑 domain 和 path，但在实际设置 cookie 时，
        * 我们不直接使用这些参数，而是仅使用 url 参数。
        * 这样可以避免浏览器自动在域名前添加点，导致创建重复的 cookie。
-       *
-       * 用户在UI中编辑的 domain 和 path 值会被保存在 updatedData 中，
-       * 但在此处不传递给 browser.cookies.set() 方法。
        */
-      log.debug('更新Cookie - 设置新Cookie', {
-        name: cookie.name,
-        value: updatedData.value ?? cookie.value,
-        secure: updatedData.secure ?? cookie.secure,
-        httpOnly: updatedData.httpOnly ?? cookie.httpOnly,
-        sameSite: updatedData.sameSite ?? cookie.sameSite,
-        expirationDate: updatedData.expirationDate ?? cookie.expirationDate,
-      });
-
       await browser.cookies.set({
         url: currentTab.url,
         name: cookie.name,

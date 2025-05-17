@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",
+    "@wxt-dev/auto-icons": "^1.0.2",
     "@wxt-dev/module-vue": "^1.0.2",
     "eslint": "^9.26.0",
     "eslint-plugin-vue": "^10.1.0",
