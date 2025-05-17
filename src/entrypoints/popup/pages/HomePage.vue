@@ -143,9 +143,6 @@ onUnmounted(() => {
 
 <template>
   <div>
-    ----
-    <iconify-icon icon="mdi:home"></iconify-icon>
-    ----
     <CookieListHeader
       :current-tab="currentTab"
       :has-permission="hasPermission"
